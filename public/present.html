@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Pictionary — Presentation</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="present-stage" id="stage">
+    <span class="conn-dot" style="position:fixed;top:10px;right:12px"></span>
+
+    <!-- LOBBY -->
+    <div id="vLobby" class="hidden">
+      <h1>AI Pictionary</h1>
+      <p class="muted" style="font-size:2vw">Scan to join — name your team</p>
+      <div class="qr"><img id="qrImg" alt="Join QR" /></div>
+      <p class="muted" id="joinUrl" style="font-size:1.4vw;margin-top:10px"></p>
+      <div id="lobbyTeams" class="row center" style="justify-content:center;margin-top:24px;font-size:2vw"></div>
+    </div>
+
+    <!-- REVEAL / COMPOSE -->
+    <div id="vCompose" class="hidden">
+      <h1 id="composeTitle">A team is prompting…</h1>
+      <div class="timer big" id="composeTimer">0</div>
+      <p class="muted" style="font-size:2vw">Writing a clue without the forbidden words…</p>
+    </div>
+
+    <!-- GENERATING / PICK → trivia -->
+    <div id="vTrivia" class="hidden">
+      <p class="muted" style="font-size:2vw">🎨 Generating image…</p>
+      <div class="trivia-card panel" id="triviaCard"></div>
+    </div>
+
+    <!-- GUESS -->
+    <div id="vGuess" class="hidden">
+      <img class="present-img" id="guessImg" alt="generated image" />
+      <div style="margin-top:18px"><span class="muted" style="font-size:2vw">Guess on your phone! </span><span class="timer big" id="guessTimer">0</span></div>
+    </div>
+
+    <!-- SCORE reveal -->
+    <div id="vScore" class="hidden">
+      <img class="present-img" id="scoreImg" alt="generated image" style="max-height:48vh" />
+      <h1 style="margin-top:14px">It was: <span id="scoreTarget"></span></h1>
+      <p style="font-size:2vw" class="muted">They actually wrote:</p>
+      <p id="scorePrompt" style="font-size:2.4vw;max-width:80vw">“…”</p>
+      <div id="scoreWho" style="font-size:1.8vw;margin-top:10px"></div>
+    </div>
+
+    <!-- FINAL -->
+    <div id="vFinal" class="hidden">
+      <h1>🏆 Final Scores</h1>
+      <ul class="scorelist" id="finalList" style="font-size:2vw;min-width:40vw"></ul>
+    </div>
+  </div>
+
+  <script src="/common.js"></script>
+  <script>
+    const { GameSocket, bindCountdown, el, esc } = Pictionary;
+    const gs = new GameSocket('present');
+
+    // QR: build once for this origin.
+    const joinUrl = location.origin + '/join';
+    el('joinUrl').textContent = joinUrl;
+    fetch('/api/qrcode?text=' + encodeURIComponent(joinUrl))
+      .then(r => r.json()).then(d => { if (d.ok) el('qrImg').src = d.dataUrl; });
+
+    bindCountdown(gs, el('composeTimer'), { phase: 'COMPOSE' });
+    bindCountdown(gs, el('guessTimer'), { phase: 'GUESS' });
+
+    function teamName(st, id) { const t = (st.teams || []).find(x => x.id === id); return t ? t.name : 'A team'; }
+
+    // Trivia rotation, driven locally from the trivia list + settings interval.
+    let trivia = [], triviaIdx = 0, triviaTimer = null;
+    function startTrivia(st) {
+      trivia = st.trivia || [];
+      const rotate = (st.settings.TRIVIA_ROTATE_SECONDS || 6) * 1000;
+      if (triviaTimer) return; // already rotating
+      function showOne() {
+        if (!trivia.length) { el('triviaCard').textContent = 'Generating…'; return; }
+        el('triviaCard').textContent = trivia[triviaIdx % trivia.length].text;
+        triviaIdx++;
+      }
+      showOne();
+      triviaTimer = setInterval(showOne, rotate);
+    }
+    function stopTrivia() { if (triviaTimer) { clearInterval(triviaTimer); triviaTimer = null; } }
+
+    const views = ['vLobby', 'vCompose', 'vTrivia', 'vGuess', 'vScore', 'vFinal'];
+    function show(id) { views.forEach(v => el(v).classList.toggle('hidden', v !== id)); }
+
+    gs.onState(function (st) {
+      if (st.type === 'needAuth') return;
+
+      if (st.phase === 'LOBBY') {
+        show('vLobby');
+        el('lobbyTeams').innerHTML = (st.teams || []).map(t =>
+          `<span class="pill" style="font-size:1.6vw;padding:8px 16px">${esc(t.name)}</span>`).join('');
+        stopTrivia();
+      } else if (st.phase === 'REVEAL' || st.phase === 'COMPOSE') {
+        show('vCompose');
+        el('composeTitle').textContent = teamName(st, st.prompterTeamId) + ' is prompting…';
+        stopTrivia();
+      } else if (st.phase === 'GENERATING' || st.phase === 'PICK') {
+        // After the trivia delay; show "Generating…" briefly first.
+        show('vTrivia');
+        startTrivia(st);
+      } else if (st.phase === 'GUESS') {
+        show('vGuess');
+        if (st.chosenImage) el('guessImg').src = st.chosenImage;
+        stopTrivia();
+      } else if (st.phase === 'SCORE') {
+        show('vScore');
+        stopTrivia();
+        const r = st.reveal;
+        if (r) {
+          if (r.image) el('scoreImg').src = r.image;
+          el('scoreTarget').textContent = r.target;
+          el('scorePrompt').textContent = '“' + (r.prompt || '') + '”';
+          const correct = Object.entries(r.guesses || {}).filter(([, g]) => g.correct).map(([id]) => teamName(st, id));
+          const prompter = teamName(st, r.prompterTeamId);
+          let who = correct.length
+            ? `✅ Guessed by: ${correct.map(esc).join(', ')}`
+            : `❌ Nobody guessed it!`;
+          who += ` &nbsp;·&nbsp; ${esc(prompter)} earned ${r.award[r.prompterTeamId] || 0}`;
+          el('scoreWho').innerHTML = who;
+        }
+      } else if (st.phase === 'FINAL') {
+        show('vFinal');
+        stopTrivia();
+        const sorted = [...st.teams].sort((a, b) => b.score - a.score);
+        el('finalList').innerHTML = sorted.map((t, i) =>
+          `<li><span>${i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : ''}${esc(t.name)}</span><strong>${t.score}</strong></li>`).join('');
+      }
+    });
+  </script>
+</body>
+</html>

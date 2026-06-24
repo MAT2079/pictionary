@@ -1,0 +1,110 @@
+[
+  {
+    "id": "lion",
+    "target": "Lion",
+    "forbidden": ["lion", "lioness", "lions", "leo", "mane", "pride", "big cat", "simba", "savanna", "roar"],
+    "acceptedGuesses": ["lion", "lions", "lioness"],
+    "category": "animals",
+    "difficulty": "easy",
+    "used": false
+  },
+  {
+    "id": "penguin",
+    "target": "Penguin",
+    "forbidden": ["penguin", "penguins", "antarctic", "antarctica", "pingu", "tuxedo bird", "flightless"],
+    "acceptedGuesses": ["penguin", "penguins"],
+    "category": "animals",
+    "difficulty": "easy",
+    "used": false
+  },
+  {
+    "id": "octopus",
+    "target": "Octopus",
+    "forbidden": ["octopus", "octopi", "tentacle", "tentacles", "eight arms", "cephalopod", "ink", "squid"],
+    "acceptedGuesses": ["octopus", "octopi", "octopuses"],
+    "category": "animals",
+    "difficulty": "medium",
+    "used": false
+  },
+  {
+    "id": "lighthouse",
+    "target": "Lighthouse",
+    "forbidden": ["lighthouse", "light house", "beacon", "tower", "coast", "coastal", "ships", "warning light"],
+    "acceptedGuesses": ["lighthouse"],
+    "category": "places",
+    "difficulty": "medium",
+    "used": false
+  },
+  {
+    "id": "volcano",
+    "target": "Volcano",
+    "forbidden": ["volcano", "volcanic", "lava", "magma", "eruption", "erupt", "crater", "ash", "vesuvius"],
+    "acceptedGuesses": ["volcano", "volcanoes"],
+    "category": "nature",
+    "difficulty": "easy",
+    "used": false
+  },
+  {
+    "id": "umbrella",
+    "target": "Umbrella",
+    "forbidden": ["umbrella", "umbrellas", "rain", "parasol", "brolly", "downpour", "shelter"],
+    "acceptedGuesses": ["umbrella", "umbrellas"],
+    "category": "objects",
+    "difficulty": "easy",
+    "used": false
+  },
+  {
+    "id": "astronaut",
+    "target": "Astronaut",
+    "forbidden": ["astronaut", "astronauts", "spaceman", "cosmonaut", "spacesuit", "nasa", "space walk", "spacewalk"],
+    "acceptedGuesses": ["astronaut", "astronauts", "spaceman", "cosmonaut"],
+    "category": "people",
+    "difficulty": "medium",
+    "used": false
+  },
+  {
+    "id": "cactus",
+    "target": "Cactus",
+    "forbidden": ["cactus", "cacti", "cactuses", "desert plant", "succulent", "saguaro", "prickly", "spines"],
+    "acceptedGuesses": ["cactus", "cacti", "cactuses"],
+    "category": "nature",
+    "difficulty": "easy",
+    "used": false
+  },
+  {
+    "id": "windmill",
+    "target": "Windmill",
+    "forbidden": ["windmill", "wind mill", "turbine", "blades", "netherlands", "dutch", "sails", "grind grain"],
+    "acceptedGuesses": ["windmill", "windmills"],
+    "category": "objects",
+    "difficulty": "medium",
+    "used": false
+  },
+  {
+    "id": "hamburger",
+    "target": "Hamburger",
+    "forbidden": ["hamburger", "burger", "burgers", "patty", "bun", "cheeseburger", "fast food", "mcdonalds"],
+    "acceptedGuesses": ["hamburger", "burger", "cheeseburger"],
+    "category": "food",
+    "difficulty": "easy",
+    "used": false
+  },
+  {
+    "id": "robot",
+    "target": "Robot",
+    "forbidden": ["robot", "robots", "android", "droid", "machine", "automaton", "cyborg", "mechanical man"],
+    "acceptedGuesses": ["robot", "robots", "android"],
+    "category": "objects",
+    "difficulty": "easy",
+    "used": false
+  },
+  {
+    "id": "pyramid",
+    "target": "Pyramid",
+    "forbidden": ["pyramid", "pyramids", "egypt", "egyptian", "giza", "pharaoh", "tomb", "triangle building"],
+    "acceptedGuesses": ["pyramid", "pyramids"],
+    "category": "places",
+    "difficulty": "medium",
+    "used": false
+  }
+]

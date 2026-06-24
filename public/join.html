@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>AI Pictionary — Join</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="wrap" style="max-width:520px">
+    <div class="row spread">
+      <h2>AI Pictionary</h2>
+      <span class="conn-dot" title="connection"></span>
+    </div>
+
+    <!-- Join form -->
+    <div class="panel" id="joinPanel">
+      <h3>Name your team</h3>
+      <input id="teamName" placeholder="e.g. The Renderers" maxlength="40" autocomplete="off" />
+      <div class="row" style="margin-top:10px"><button id="joinBtn">Join game</button></div>
+      <div id="joinMsg" class="notice bad hidden"></div>
+    </div>
+
+    <!-- After joining -->
+    <div class="panel hidden" id="mePanel">
+      <div class="row spread">
+        <div><span class="muted">You are</span> <strong id="myTeamName"></strong></div>
+        <span class="pill" id="phasePill">LOBBY</span>
+      </div>
+    </div>
+
+    <div class="panel hidden" id="lobbyPanel">
+      <h3>Waiting for the game to start…</h3>
+      <p class="muted">Keep this screen open. You'll guess from the projected image.</p>
+    </div>
+
+    <div class="panel hidden" id="promptingPanel">
+      <h3 id="promptingTitle">A team is prompting…</h3>
+      <p class="muted">Watch the big screen.</p>
+    </div>
+
+    <div class="panel hidden" id="guessPanel">
+      <h3>Guess the image! <span class="timer" id="guessTimer">0</span>s</h3>
+      <p class="muted">Read the picture off the projector, then type your guess.</p>
+      <input id="guessInput" placeholder="Your guess" autocomplete="off" />
+      <div class="row" style="margin-top:10px"><button id="guessBtn">Submit guess</button></div>
+      <div id="guessFeedback" class="notice hidden"></div>
+      <img id="mirrorImg" class="hidden" style="margin-top:12px;width:100%;border-radius:12px" />
+    </div>
+
+    <div class="panel hidden" id="ownTurnPanel">
+      <h3>It's your turn to prompt!</h3>
+      <p class="muted">Head to the host screen — your team composes the clue there. You don't guess this round.</p>
+    </div>
+
+    <div class="panel hidden" id="scorePanel">
+      <h3 id="scoreTitle">Round over</h3>
+      <div id="scoreFeedback" class="notice hidden"></div>
+      <ul class="scorelist" id="standings"></ul>
+    </div>
+
+    <div class="panel hidden" id="finalPanel">
+      <h3>🏆 Final scores</h3>
+      <ul class="scorelist" id="finalStandings"></ul>
+    </div>
+  </div>
+
+  <script src="/common.js"></script>
+  <script>
+    const { GameSocket, bindCountdown, el, esc } = Pictionary;
+    const gs = new GameSocket('join');
+    let myTeamId = localStorage.getItem('pictionaryTeamId') || null;
+    let myName = localStorage.getItem('pictionaryTeamName') || '';
+
+    gs.onOpen = function () {
+      if (myTeamId) gs.send({ type: 'rejoin', teamId: myTeamId });
+    };
+
+    el('joinBtn').onclick = function () {
+      const name = el('teamName').value.trim();
+      if (!name) return;
+      gs.send({ type: 'join', name: name });
+    };
+    el('teamName').addEventListener('keydown', e => { if (e.key === 'Enter') el('joinBtn').click(); });
+
+    gs.on('joined', function (m) {
+      myTeamId = m.teamId; myName = m.name;
+      localStorage.setItem('pictionaryTeamId', myTeamId);
+      localStorage.setItem('pictionaryTeamName', myName);
+      el('joinPanel').classList.add('hidden');
+      el('mePanel').classList.remove('hidden');
+      el('myTeamName').textContent = myName;
+    });
+    gs.on('error', function (m) {
+      const box = el('joinMsg');
+      box.textContent = m.message; box.classList.remove('hidden');
+    });
+    gs.on('guessResult', function (m) {
+      const box = el('guessFeedback');
+      box.classList.remove('hidden', 'good', 'bad');
+      if (m.ok) {
+        box.classList.add(m.correct ? 'good' : 'bad');
+        box.textContent = m.correct ? 'Correct! 🎉 Locked in.' : 'Guess submitted — locked in.';
+        el('guessInput').disabled = true; el('guessBtn').disabled = true;
+      } else { box.classList.add('bad'); box.textContent = m.error; }
+    });
+
+    el('guessBtn').onclick = function () {
+      const t = el('guessInput').value.trim();
+      if (t) gs.send({ type: 'submitGuess', text: t });
+    };
+    el('guessInput').addEventListener('keydown', e => { if (e.key === 'Enter') el('guessBtn').click(); });
+
+    bindCountdown(gs, el('guessTimer'), { phase: 'GUESS' });
+
+    function teamName(state, id) {
+      const t = (state.teams || []).find(x => x.id === id);
+      return t ? t.name : 'A team';
+    }
+    function renderStandings(ul, teams) {
+      const sorted = [...teams].sort((a, b) => b.score - a.score);
+      ul.innerHTML = sorted.map(t =>
+        `<li><span>${esc(t.name)}${t.id === myTeamId ? ' (you)' : ''}</span><strong>${t.score}</strong></li>`
+      ).join('');
+    }
+
+    let lastPhase = null;
+    gs.onState(function (st) {
+      if (st.type === 'needAuth') return;
+      if (myTeamId && !st.teamId) {
+        // Server forgot us (e.g. redeploy). Drop stored id, show join.
+      }
+      el('phasePill').textContent = st.phase;
+      const joined = !!(myTeamId);
+      if (joined) {
+        el('joinPanel').classList.add('hidden');
+        el('mePanel').classList.remove('hidden');
+        el('myTeamName').textContent = myName;
+      }
+
+      const show = (id, on) => el(id).classList.toggle('hidden', !on);
+      const amPrompter = st.amPrompter;
+
+      // Reset guess input when a new GUESS phase starts.
+      if (st.phase === 'GUESS' && lastPhase !== 'GUESS') {
+        el('guessInput').value = ''; el('guessInput').disabled = false;
+        el('guessBtn').disabled = false; el('guessFeedback').classList.add('hidden');
+      }
+      lastPhase = st.phase;
+
+      show('lobbyPanel', joined && st.phase === 'LOBBY');
+      show('promptingPanel', joined && (st.phase === 'REVEAL' || st.phase === 'COMPOSE' || st.phase === 'GENERATING' || st.phase === 'PICK') && !amPrompter);
+      show('ownTurnPanel', joined && amPrompter && st.phase !== 'LOBBY' && st.phase !== 'FINAL' && st.phase !== 'SCORE');
+      show('guessPanel', joined && st.phase === 'GUESS' && !amPrompter);
+      show('scorePanel', joined && st.phase === 'SCORE');
+      show('finalPanel', joined && st.phase === 'FINAL');
+
+      if (st.phase === 'REVEAL' || st.phase === 'COMPOSE') {
+        el('promptingTitle').textContent = teamName(st, st.prompterTeamId) + ' is prompting…';
+      }
+
+      // Mirror image to phones (optional).
+      const mirror = el('mirrorImg');
+      if (st.chosenImage && st.phase === 'GUESS') { mirror.src = st.chosenImage; mirror.classList.remove('hidden'); }
+      else mirror.classList.add('hidden');
+
+      if (st.phase === 'SCORE' && st.reveal) {
+        const r = st.reveal;
+        const mine = st.myGuess;
+        const fb = el('scoreFeedback');
+        fb.classList.remove('hidden', 'good', 'bad', 'warn');
+        if (amPrompter) {
+          fb.classList.add('warn');
+          fb.innerHTML = `The word was <strong>${esc(r.target)}</strong>. Your clue earned <strong>${r.award[myTeamId] || 0}</strong> pts.`;
+        } else if (mine && mine.correct) {
+          fb.classList.add('good');
+          fb.innerHTML = `Correct! The word was <strong>${esc(r.target)}</strong>. +${r.award[myTeamId] || 0} pts`;
+        } else {
+          fb.classList.add('bad');
+          fb.innerHTML = `The word was <strong>${esc(r.target)}</strong>.`;
+        }
+        renderStandings(el('standings'), st.teams);
+      }
+      if (st.phase === 'FINAL') renderStandings(el('finalStandings'), st.teams);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "ai-pictionary",
+  "version": "1.0.0",
+  "description": "AI Pictionary — a party game where teams write image-generation prompts under a forbidden-word constraint and other teams guess the hidden target.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "build": "node -e \"console.log('No build step required — static clients are served as-is.')\"",
+    "dev": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "jimp": "^0.22.12",
+    "qrcode": "^1.5.3",
+    "ws": "^8.17.1"
+  }
+}

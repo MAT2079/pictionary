@@ -1,0 +1,32 @@
+{
+  "FORGE_URL": "",
+  "FORGE_AUTH_HEADER": "",
+  "MODEL_CHECKPOINT": "",
+  "SAMPLER": "DPM++ SDE",
+  "STEPS": 6,
+  "CFG_SCALE": 1.5,
+  "WIDTH": 832,
+  "HEIGHT": 832,
+  "N_CANDIDATES": 4,
+  "SEQUENTIAL_GEN": true,
+  "NEGATIVE_PROMPT": "lowres, bad anatomy, text, watermark, nsfw",
+  "SAFETY_CHECKER": true,
+  "GEN_TIMEOUT_SECONDS": 90,
+  "MIRROR_IMAGE_TO_PHONES": false,
+
+  "COMPOSE_SECONDS": 60,
+  "PICK_SECONDS": 20,
+  "GUESS_SECONDS": 45,
+  "TRIVIA_DELAY_SECONDS": 3,
+  "TRIVIA_ROTATE_SECONDS": 6,
+
+  "CORRECT_POINTS": 100,
+  "SPEED_BONUS_ENABLED": true,
+  "FIRST_CORRECT_BONUS": 50,
+  "PROMPTER_POINTS_PER_TEAM": 50,
+  "ZERO_IF_NONE": true,
+
+  "ROUNDS": 1,
+  "MIN_TEAMS": 2,
+  "ALLOWED_CHARS": "a-z A-Z , - ' and space"
+}

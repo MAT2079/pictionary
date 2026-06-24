@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Pictionary — Prompter</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="row spread">
+      <h2>Prompter Station</h2>
+      <div class="row"><span class="pill" id="phasePill">LOBBY</span><span class="conn-dot"></span></div>
+    </div>
+
+    <div class="panel hidden" id="idlePanel">
+      <h3 id="idleTitle">Waiting…</h3>
+      <p class="muted" id="idleSub">This screen wakes up when it's a team's turn to prompt.</p>
+    </div>
+
+    <!-- REVEAL / COMPOSE -->
+    <div class="panel hidden" id="composePanel">
+      <div class="row spread">
+        <div>
+          <span class="muted">Your secret word</span>
+          <div class="big-target" id="target">—</div>
+        </div>
+        <div class="center">
+          <div class="muted">Time</div>
+          <div class="timer big" id="composeTimer">0</div>
+        </div>
+      </div>
+
+      <label>Forbidden words — do NOT use any of these</label>
+      <div class="forbidden" id="forbidden"></div>
+
+      <label style="margin-top:16px">Write a prompt that makes the picture obvious — without those words</label>
+      <textarea id="prompt" placeholder="Describe the image you want…" maxlength="500"></textarea>
+
+      <div id="filterInfo" class="muted" style="margin-top:6px;font-size:13px"></div>
+      <div id="cleanPreview" class="notice hidden"></div>
+      <div id="rejectMsg" class="notice bad hidden"></div>
+
+      <div class="row" style="margin-top:12px">
+        <button id="submitBtn" disabled>Generate image</button>
+        <span class="muted" id="composeHint">Waiting for the round to start…</span>
+      </div>
+    </div>
+
+    <!-- GENERATING -->
+    <div class="panel hidden" id="genPanel">
+      <h3>🎨 Generating your candidates…</h3>
+      <p class="muted">Hang tight — this can take a while on the host machine.</p>
+      <div id="genError" class="notice bad hidden"></div>
+    </div>
+
+    <!-- PICK -->
+    <div class="panel hidden" id="pickPanel">
+      <div class="row spread">
+        <h3>Pick the clearest image</h3>
+        <div class="center"><div class="muted">Auto-picks in</div><div class="timer" id="pickTimer">0</div></div>
+      </div>
+      <div class="cards" id="candidates"></div>
+    </div>
+
+    <!-- GUESS / SCORE -->
+    <div class="panel hidden" id="watchPanel">
+      <h3 id="watchTitle">Teams are guessing…</h3>
+      <img id="watchImg" style="max-width:100%;border-radius:12px" />
+      <div id="watchResult" class="notice hidden"></div>
+    </div>
+  </div>
+
+  <script src="/common.js"></script>
+  <script>
+    const { GameSocket, bindCountdown, el, esc } = Pictionary;
+    const gs = new GameSocket('play');
+    bindCountdown(gs, el('composeTimer'), { phase: 'COMPOSE' });
+    bindCountdown(gs, el('pickTimer'), { phase: 'PICK' });
+
+    const promptEl = el('prompt');
+    let canSubmit = false;
+
+    function sendPreview() {
+      gs.send({ type: 'draft', text: promptEl.value });
+      gs.send({ type: 'previewPrompt', text: promptEl.value });
+    }
+    promptEl.addEventListener('input', sendPreview);
+
+    gs.on('previewResult', function (p) {
+      const stripped = p.stripped && p.stripped.length
+        ? `Removed: ${p.stripped.map(c => c === ' ' ? '␣' : c).join(' ')}` : '';
+      el('filterInfo').textContent = `Cleaned prompt: “${p.clean}” ${stripped ? '· ' + stripped : ''}`;
+      const reject = el('rejectMsg');
+      if (p.forbiddenHits && p.forbiddenHits.length) {
+        reject.classList.remove('hidden');
+        reject.textContent = '🚫 Forbidden word(s) in your prompt: ' + p.forbiddenHits.join(', ');
+        canSubmit = false;
+      } else if (p.profane) {
+        reject.classList.remove('hidden');
+        reject.textContent = '🚫 Please keep it clean.';
+        canSubmit = false;
+      } else {
+        reject.classList.add('hidden');
+        canSubmit = !!p.clean;
+      }
+      el('submitBtn').disabled = !canSubmit;
+    });
+
+    el('submitBtn').onclick = function () {
+      gs.send({ type: 'submitPrompt', text: promptEl.value });
+      el('submitBtn').disabled = true;
+    };
+    gs.on('promptRejected', function (m) {
+      const reject = el('rejectMsg');
+      reject.classList.remove('hidden');
+      if (m.reason === 'forbidden') reject.textContent = '🚫 You used a forbidden word: “' + m.word + '”. Rewrite it.';
+      else if (m.reason === 'profanity') reject.textContent = '🚫 That prompt was flagged. Keep it clean.';
+      else reject.textContent = '🚫 ' + (m.error || 'Prompt rejected.');
+      el('submitBtn').disabled = false;
+    });
+
+    function renderCandidates(st) {
+      const wrap = el('candidates');
+      wrap.innerHTML = (st.candidates || []).map((src, i) =>
+        `<div class="candidate" data-i="${i}"><span class="num">${i + 1}</span><img src="${src}" /></div>`).join('');
+      wrap.querySelectorAll('.candidate').forEach(c => {
+        c.onclick = () => gs.send({ type: 'pickImage', index: parseInt(c.dataset.i, 10) });
+      });
+    }
+
+    const panels = ['idlePanel', 'composePanel', 'genPanel', 'pickPanel', 'watchPanel'];
+    function show(id) { panels.forEach(p => el(p).classList.toggle('hidden', p !== id)); }
+
+    let lastEntryId = null;
+    gs.onState(function (st) {
+      if (st.type === 'needAuth') return;
+      el('phasePill').textContent = st.phase;
+
+      if (st.phase === 'LOBBY') {
+        show('idlePanel');
+        el('idleTitle').textContent = 'Waiting for the game to start…';
+      } else if (st.phase === 'REVEAL' || st.phase === 'COMPOSE') {
+        show('composePanel');
+        el('target').textContent = st.target || '—';
+        el('forbidden').innerHTML = (st.forbidden || []).map(w => `<span>${esc(w)}</span>`).join('');
+        const composing = st.phase === 'COMPOSE';
+        promptEl.disabled = !composing;
+        el('composeHint').textContent = composing ? 'Type, then Generate.' : 'Get ready…';
+        // Reset box for a fresh target.
+        if (st.target && st.phase === 'REVEAL') {
+          promptEl.value = '';
+          el('rejectMsg').classList.add('hidden');
+          el('filterInfo').textContent = '';
+          el('submitBtn').disabled = true; canSubmit = false;
+        }
+      } else if (st.phase === 'GENERATING') {
+        show('genPanel');
+        const errBox = el('genError');
+        if (st.generation && st.generation.status === 'error') {
+          errBox.classList.remove('hidden');
+          errBox.textContent = '⚠️ ' + st.generation.error + ' (the operator can retry)';
+        } else errBox.classList.add('hidden');
+      } else if (st.phase === 'PICK') {
+        show('pickPanel');
+        renderCandidates(st);
+      } else if (st.phase === 'GUESS') {
+        show('watchPanel');
+        el('watchTitle').textContent = 'Teams are guessing your image…';
+        if (st.chosenImage) el('watchImg').src = st.chosenImage;
+        el('watchResult').classList.add('hidden');
+      } else if (st.phase === 'SCORE') {
+        show('watchPanel');
+        el('watchTitle').textContent = 'Round over';
+        const r = st.lastTurnResult;
+        if (r) {
+          if (r.image) el('watchImg').src = r.image;
+          const box = el('watchResult');
+          box.classList.remove('hidden');
+          box.classList.add('good');
+          box.innerHTML = `Word: <strong>${esc(r.target)}</strong> · Your prompt: “${esc(r.prompt || '')}” · ${r.numCorrect} team(s) guessed it.`;
+        }
+      } else if (st.phase === 'FINAL') {
+        show('idlePanel');
+        el('idleTitle').textContent = 'Game over — see the big screen 🏆';
+        el('idleSub').textContent = '';
+      }
+    });
+  </script>
+</body>
+</html>
