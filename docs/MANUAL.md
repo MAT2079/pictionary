@@ -30,10 +30,15 @@ Run these in order, ~10 minutes before kickoff:
    [UptimeRobot](https://uptimerobot.com) monitor at it during the event so it
    never idles mid-game.
 2. **Start the GPU stack** on the home machine:
-   - via Discord: `/run https://your-app.onrender.com`, **or**
-   - by hand: `cd forge && docker compose up -d` (Windows) / launch Forge +
-     worker natively (macOS).
-3. **Run the flight check**:
+   - **First time on this machine** — run the one-shot setup script (downloads
+     models, writes `.env`, brings the stack up, then runs the flight check):
+     - Windows: `cd forge; ./forge-setup-windows.ps1 -RenderUrl <url> -WorkerSecret <secret>`
+     - macOS: `cd forge && ./forge-setup-mac.sh <url> <secret> --forge-dir <path>`
+   - **Subsequent events** — the stack/models are already there, so just bring it
+     up via Discord `/run https://your-app.onrender.com`, or by hand
+     `cd forge && docker compose up -d` (Windows) / relaunch Forge + worker (macOS).
+3. **Run the flight check** (the setup script already did this on first run; re-run
+   anytime to re-verify — it's the pure checker, no downloads):
    - Windows: `cd forge; ./flight-check.ps1 -RenderUrl <url> -WorkerSecret <secret>`
    - macOS: `cd forge && ./flight-check.sh <url> <secret>`
    All steps should PASS (it ends by submitting a real test job).

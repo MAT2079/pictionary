@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# macOS flight check for AI Pictionary (spec §16). Mirrors the Windows checks
-# minus the Docker/NVIDIA steps (Forge runs natively with MPS).
+# macOS flight check for AI Pictionary (spec §16). PURE VERIFIER — runs the
+# PASS/FAIL chain only, no install/download, so it's safe to re-run before every
+# event (it's a step in the MANUAL showtime sequence). First-time setup (models,
+# worker) is done by forge-setup-mac.sh, which calls this script at the end.
+# Mirrors the Windows checks minus the Docker/NVIDIA steps (Forge runs natively).
 #
 # Usage: ./flight-check.sh <RENDER_URL> <WORKER_SECRET> [FORGE_URL] [CHECKPOINT]
 

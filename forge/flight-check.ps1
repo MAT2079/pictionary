@@ -2,8 +2,10 @@
 .SYNOPSIS
   Windows flight check for AI Pictionary's Forge + worker stack (spec §16).
 .DESCRIPTION
-  Verifies each link in the chain with PASS/FAIL, ending with an end-to-end test
-  job submitted via the cloud server that should return images.
+  PURE VERIFIER - runs the PASS/FAIL chain only. It does not install or download
+  anything, so it's safe to re-run before every event (it's a step in the
+  MANUAL showtime sequence). First-time setup (models, .env, stack up) is done by
+  forge-setup-windows.ps1, which calls this script at the end.
 .EXAMPLE
   ./flight-check.ps1 -RenderUrl "https://your-app.onrender.com" -WorkerSecret "secret"
 #>

@@ -116,7 +116,8 @@ Settings reverts to its env/default after a Render redeploy or spin-down — see
 ├─ worker/                     # outbound poll-worker (+ Dockerfile, NSFW hook)
 ├─ bot/                        # Discord control bot
 ├─ forge/                      # docker-compose, forge.Dockerfile, setup guides,
-│                              #   flight-check.ps1 / flight-check.sh, models/
+│                              #   forge-setup-windows.ps1 / forge-setup-mac.sh
+│                              #   (one-shot setup), flight-check.* (verify), models/
 └─ docs/MANUAL.md              # operator runbook
 ```
 
