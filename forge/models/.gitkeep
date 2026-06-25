@@ -1,0 +1,5 @@
+# Volume mount target for Stable Diffusion checkpoints and LoRA.
+# Models are large and are NOT committed. Create these subfolders and place files:
+#   models/Stable-diffusion/   <- SDXL Lightning + DreamShaper 8 checkpoints (§18)
+#   models/Lora/               <- optional LCM LoRA
+#   models/VAE/                <- optional VAE
