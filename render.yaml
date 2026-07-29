@@ -1,0 +1,22 @@
+# Render Blueprint for AI Pictionary (Runware variant). A single free web
+# service serves the built React frontend and calls the Runware API directly for
+# image generation - there is no local worker or Forge stack.
+services:
+  - type: web
+    name: ai-pictionary-runware
+    runtime: node
+    plan: free
+    # Builds web/ (Vite) then server/ (tsc). Root install hoists workspace deps.
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: OPERATOR_PASSWORD
+        value: adminburger
+      # Runware API key (https://my.runware.ai -> API Keys). Set it as a secret in
+      # the Render dashboard; sync:false keeps it out of source control.
+      - key: RUNWARE_API_KEY
+        sync: false
+      # BASE_URL is normally derived from the request host; override only for
+      # all-local / LAN mode so the join QR points at the right address.
+      - key: NODE_VERSION
+        value: "20"

@@ -1,0 +1,164 @@
+# AI Pictionary prompt pool. Copy to prompts.yaml to customise.
+# forbidden  = surface forms the prompter may NOT type (whole-word, case-insensitive; phrases allowed)
+# acceptedGuesses = normalized forms that count as a correct guess
+# Keep targets wholesome, concrete, and visually unambiguous.
+
+- target: Lion
+  category: animals
+  forbidden: [lion, lions, lioness, leo, mane, pride, big cat, simba, king of the jungle]
+  acceptedGuesses: [lion, lions]
+
+- target: Bicycle
+  category: objects
+  forbidden: [bicycle, bike, cycle, bicycles, pedal, two wheeler, two-wheeler]
+  acceptedGuesses: [bicycle, bike]
+
+- target: Lighthouse
+  category: places
+  forbidden: [lighthouse, light house, beacon, tower, coast guard, foghorn]
+  acceptedGuesses: [lighthouse]
+
+- target: Umbrella
+  category: objects
+  forbidden: [umbrella, umbrellas, parasol, brolly, rain shield]
+  acceptedGuesses: [umbrella]
+
+- target: Octopus
+  category: animals
+  forbidden: [octopus, octopi, tentacle, tentacles, eight arms, cephalopod, ink]
+  acceptedGuesses: [octopus]
+
+- target: Cactus
+  category: plants
+  forbidden: [cactus, cacti, succulent, desert plant, prickly, spines, saguaro]
+  acceptedGuesses: [cactus]
+
+- target: Hot air balloon
+  category: vehicles
+  forbidden: [balloon, balloons, hot air, basket, aerostat, montgolfier]
+  acceptedGuesses: [hot air balloon, balloon, air balloon]
+
+- target: Volcano
+  category: nature
+  forbidden: [volcano, volcanic, lava, eruption, magma, crater, vesuvius]
+  acceptedGuesses: [volcano]
+
+- target: Pineapple
+  category: food
+  forbidden: [pineapple, pineapples, ananas, tropical fruit, spiky fruit]
+  acceptedGuesses: [pineapple]
+
+- target: Robot
+  category: technology
+  forbidden: [robot, robots, android, droid, bot, automaton, mechanical man]
+  acceptedGuesses: [robot]
+
+- target: Castle
+  category: places
+  forbidden: [castle, castles, fortress, palace, keep, citadel, moat, drawbridge]
+  acceptedGuesses: [castle]
+
+- target: Penguin
+  category: animals
+  forbidden: [penguin, penguins, antarctic bird, flightless, tuxedo bird]
+  acceptedGuesses: [penguin]
+
+- target: Telescope
+  category: objects
+  forbidden: [telescope, telescopes, spyglass, stargazing, observatory, lens]
+  acceptedGuesses: [telescope]
+
+- target: Sunflower
+  category: plants
+  forbidden: [sunflower, sunflowers, helianthus, yellow flower, sun flower]
+  acceptedGuesses: [sunflower]
+
+- target: Submarine
+  category: vehicles
+  forbidden: [submarine, submarines, sub, underwater boat, periscope, u-boat]
+  acceptedGuesses: [submarine, sub]
+
+- target: Snowman
+  category: seasonal
+  forbidden: [snowman, snowmen, snow man, frosty, carrot nose, snowball]
+  acceptedGuesses: [snowman]
+
+- target: Guitar
+  category: music
+  forbidden: [guitar, guitars, strings, acoustic, electric, fretboard, strum]
+  acceptedGuesses: [guitar]
+
+- target: Mountain
+  category: nature
+  forbidden: [mountain, mountains, peak, summit, alps, everest, ridge]
+  acceptedGuesses: [mountain]
+
+- target: Owl
+  category: animals
+  forbidden: [owl, owls, hoot, night bird, barn owl, talons]
+  acceptedGuesses: [owl]
+
+- target: Rocket
+  category: vehicles
+  forbidden: [rocket, rockets, spaceship, launch, nasa, booster, space shuttle]
+  acceptedGuesses: [rocket]
+
+- target: Cupcake
+  category: food
+  forbidden: [cupcake, cupcakes, frosting, muffin, dessert, sprinkles, icing]
+  acceptedGuesses: [cupcake]
+
+- target: Anchor
+  category: objects
+  forbidden: [anchor, anchors, ship, mooring, nautical, dock]
+  acceptedGuesses: [anchor]
+
+- target: Butterfly
+  category: animals
+  forbidden: [butterfly, butterflies, moth, wings, caterpillar, monarch]
+  acceptedGuesses: [butterfly]
+
+- target: Windmill
+  category: places
+  forbidden: [windmill, windmills, blades, dutch, turbine, mill, vanes]
+  acceptedGuesses: [windmill]
+
+- target: Igloo
+  category: places
+  forbidden: [igloo, igloos, ice house, snow dome, eskimo, inuit shelter]
+  acceptedGuesses: [igloo]
+
+- target: Kangaroo
+  category: animals
+  forbidden: [kangaroo, kangaroos, roo, marsupial, joey, pouch, australia hopper]
+  acceptedGuesses: [kangaroo]
+
+- target: Compass
+  category: objects
+  forbidden: [compass, compasses, north, navigation, bearing, needle, direction]
+  acceptedGuesses: [compass]
+
+- target: Waterfall
+  category: nature
+  forbidden: [waterfall, waterfalls, cascade, falls, niagara, plunge]
+  acceptedGuesses: [waterfall]
+
+- target: Treehouse
+  category: places
+  forbidden: [treehouse, tree house, tree fort, ladder in tree, branches house]
+  acceptedGuesses: [treehouse, tree house]
+
+- target: Jellyfish
+  category: animals
+  forbidden: [jellyfish, jelly, medusa, stinger, sea jelly, tentacle]
+  acceptedGuesses: [jellyfish]
+
+- target: Hammock
+  category: objects
+  forbidden: [hammock, hammocks, swinging bed, between trees, lounging net]
+  acceptedGuesses: [hammock]
+
+- target: Ferris wheel
+  category: places
+  forbidden: [ferris wheel, ferris, big wheel, carnival, fairground wheel, gondola]
+  acceptedGuesses: [ferris wheel, ferris]
